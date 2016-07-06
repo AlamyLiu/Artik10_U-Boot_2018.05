@@ -241,6 +241,7 @@
 #define CONFIG_CMD_MOVI
 #define CONFIG_CMD_MOVINAND
 #define CONFIG_CMD_BOOTZ
+#define CONFIG_SUPPORT_RAW_INITRD
 
 #define CONFIG_OF_LIBFDT
 
@@ -268,10 +269,10 @@
 #define CONFIG_MODULE_PART_SIZE		32
 #define CONFIG_ROOTFS_PART_SIZE		3072
 
-#define CONFIG_ROOT_DEV		0
+#define CONFIG_ROOT_DEV		1
 #define CONFIG_BOOT_PART	1
 #define CONFIG_MODULE_PART	2
-#define CONFIG_ROOT_PART	3
+#define CONFIG_ROOT_PART	2
 
 #define CONFIG_SET_DFU_ALT_INFO
 #define CONFIG_SET_DFU_ALT_BUF_LEN	(1 << 10)	/* 1 KB */
@@ -343,8 +344,8 @@
 	"rootdev=" __stringify(CONFIG_ROOT_DEV) "\0"			\
 	"rootpart=" __stringify(CONFIG_ROOT_PART) "\0"			\
 	"bootpart=" __stringify(CONFIG_BOOT_PART) "\0"			\
-	"root_rw=rw\0"							\
-	"opts=loglevel=4\0"						\
+	"root_rw=rootwait ro\0"						\
+	"opts=\0"						\
 	"fdtfile=" CONFIG_FDT_FILE "\0"					\
 	"kernel_file=zImage\0"						\
 	"kernel_addr=40008000\0"					\
