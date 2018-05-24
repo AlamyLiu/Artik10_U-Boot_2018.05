@@ -18,6 +18,8 @@
 
 #undef CONFIG_KEYBOARD
 
+#undef CONFIG_SYS_BOARD
+#define CONFIG_SYS_BOARD	"artik10"
 #define CONFIG_BOARD_COMMON
 
 #define CONFIG_ARTIK10			/* which is in a ARTIK10 */
