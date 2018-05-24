@@ -1,3 +1,10 @@
+ARTIK10 BOARD
+M:	Alamy Liu <Alamy.Liu@cypress.com>
+S:	Maintained
+F:	board/samsung/smdk5420/
+F:	include/configs/artik10.h
+F:	configs/artik10_defconfig
+
 SMDK5420 BOARD
 M:	Akshay Saraswat <akshay.s@samsung.com>
 S:	Maintained
