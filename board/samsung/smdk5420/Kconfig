@@ -1,3 +1,24 @@
+# ----- Samsung Artik10 board -----
+if TARGET_ARTIK10
+
+# config SYS_CPU
+#	default "armv7"
+
+# config SYS_SOC
+#	default "exynos"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_BOARD
+	default "smdk5420"
+
+config SYS_CONFIG_NAME
+	default "artik10"
+
+endif
+
+# ----- Samsung Odroid XU3 board -----
 if TARGET_ODROID_XU3
 
 config SYS_BOARD

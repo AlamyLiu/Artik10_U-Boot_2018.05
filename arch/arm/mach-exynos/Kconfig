@@ -83,6 +83,10 @@ config SPL_LIBGENERIC_SUPPORT
 choice
 	prompt "EXYNOS5 board select"
 
+config TARGET_ARTIK10
+	bool "Exynos5422 Artik10 board"
+	select OF_CONTROL
+
 config TARGET_ODROID_XU3
 	bool "Exynos5422 Odroid board"
 	select OF_CONTROL
