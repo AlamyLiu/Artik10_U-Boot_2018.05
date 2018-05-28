@@ -593,7 +593,7 @@ static int dwc3_gadget_ep_enable(struct usb_ep *ep,
 		const struct usb_endpoint_descriptor *desc)
 {
 	struct dwc3_ep			*dep;
-	unsigned long			flags;
+	unsigned long			flags = 0;
 	int				ret;
 
 	if (!ep || !desc || desc->bDescriptorType != USB_DT_ENDPOINT) {
@@ -641,7 +641,7 @@ static int dwc3_gadget_ep_enable(struct usb_ep *ep,
 static int dwc3_gadget_ep_disable(struct usb_ep *ep)
 {
 	struct dwc3_ep			*dep;
-	unsigned long			flags;
+	unsigned long			flags = 0;
 	int				ret;
 
 	if (!ep) {
@@ -1063,7 +1063,7 @@ static int dwc3_gadget_ep_queue(struct usb_ep *ep, struct usb_request *request,
 	struct dwc3_request		*req = to_dwc3_request(request);
 	struct dwc3_ep			*dep = to_dwc3_ep(ep);
 
-	unsigned long			flags;
+	unsigned long			flags = 0;
 
 	int				ret;
 
@@ -1102,7 +1102,7 @@ static int dwc3_gadget_ep_dequeue(struct usb_ep *ep,
 	struct dwc3_ep			*dep = to_dwc3_ep(ep);
 	struct dwc3			*dwc = dep->dwc;
 
-	unsigned long			flags;
+	unsigned long			flags = 0;
 	int				ret = 0;
 
 	spin_lock_irqsave(&dwc->lock, flags);
@@ -1184,7 +1184,7 @@ static int dwc3_gadget_ep_set_halt(struct usb_ep *ep, int value)
 {
 	struct dwc3_ep			*dep = to_dwc3_ep(ep);
 
-	unsigned long			flags;
+	unsigned long			flags = 0;
 
 	int				ret;
 
@@ -1198,7 +1198,7 @@ static int dwc3_gadget_ep_set_halt(struct usb_ep *ep, int value)
 static int dwc3_gadget_ep_set_wedge(struct usb_ep *ep)
 {
 	struct dwc3_ep			*dep = to_dwc3_ep(ep);
-	unsigned long			flags;
+	unsigned long			flags = 0;
 	int				ret;
 
 	spin_lock_irqsave(&dwc->lock, flags);
@@ -1259,7 +1259,7 @@ static int dwc3_gadget_wakeup(struct usb_gadget *g)
 	struct dwc3		*dwc = gadget_to_dwc(g);
 
 	unsigned long		timeout;
-	unsigned long		flags;
+	unsigned long		flags = 0;
 
 	u32			reg;
 
@@ -1338,7 +1338,7 @@ static int dwc3_gadget_set_selfpowered(struct usb_gadget *g,
 		int is_selfpowered)
 {
 	struct dwc3		*dwc = gadget_to_dwc(g);
-	unsigned long		flags;
+	unsigned long		flags = 0;
 
 	spin_lock_irqsave(&dwc->lock, flags);
 	dwc->is_selfpowered = !!is_selfpowered;
@@ -1404,7 +1404,7 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
 static int dwc3_gadget_pullup(struct usb_gadget *g, int is_on)
 {
 	struct dwc3		*dwc = gadget_to_dwc(g);
-	unsigned long		flags;
+	unsigned long		flags = 0;
 	int			ret;
 
 	is_on = !!is_on;
@@ -1445,7 +1445,7 @@ static int dwc3_gadget_start(struct usb_gadget *g,
 {
 	struct dwc3		*dwc = gadget_to_dwc(g);
 	struct dwc3_ep		*dep;
-	unsigned long		flags;
+	unsigned long		flags = 0;
 	int			ret = 0;
 	u32			reg;
 
@@ -1544,7 +1544,7 @@ err1:
 static int dwc3_gadget_stop(struct usb_gadget *g)
 {
 	struct dwc3		*dwc = gadget_to_dwc(g);
-	unsigned long		flags;
+	unsigned long		flags = 0;
 
 	spin_lock_irqsave(&dwc->lock, flags);
 
@@ -2489,7 +2489,7 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3 *dwc, u32 buf)
 static irqreturn_t dwc3_thread_interrupt(int irq, void *_dwc)
 {
 	struct dwc3 *dwc = _dwc;
-	unsigned long flags;
+	unsigned long flags = 0;
 	irqreturn_t ret = IRQ_NONE;
 	int i;
 
