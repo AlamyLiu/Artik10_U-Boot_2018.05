@@ -9,6 +9,8 @@
  * Marius Groeger <mgroeger@sysgo.de>
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <api.h>
 /* TODO: can we just include all these headers whether needed or not? */
@@ -657,12 +659,22 @@ static int run_main_loop(void)
  *
  * TODO: perhaps reset the watchdog in the initcall function after each call?
  */
+
+extern int debug_msg_init(void);
+extern int debug_msg(void);
+extern int debug_msg_value(int v);
+
 static init_fnc_t init_sequence_r[] = {
+    debug_msg_init,
+    debug_msg,
 	initr_trace,
+    debug_msg,
 	initr_reloc,
+    debug_msg,
 	/* TODO: could x86/PPC have this also perhaps? */
 #ifdef CONFIG_ARM
 	initr_caches,
+    debug_msg,
 	/* Note: For Freescale LS2 SoCs, new MMU table is created in DDR.
 	 *	 A temporary mapping of IFC high region is since removed,
 	 *	 so environmental variables in NOR flash is not available
@@ -671,27 +683,38 @@ static init_fnc_t init_sequence_r[] = {
 	 */
 #endif
 	initr_reloc_global_data,
+    debug_msg,
 #if defined(CONFIG_SYS_INIT_RAM_LOCK) && defined(CONFIG_E500)
 	initr_unlock_ram_in_cache,
 #endif
+    debug_msg,
 	initr_barrier,
+    debug_msg,
 	initr_malloc,
+    debug_msg,
 	log_init,
+    debug_msg,
 	initr_bootstage,	/* Needs malloc() but has its own timer */
+    debug_msg,
 	initr_console_record,
+    debug_msg,
 #ifdef CONFIG_SYS_NONCACHED_MEMORY
 	initr_noncached,
 #endif
 	bootstage_relocate,
+    debug_msg,
 #ifdef CONFIG_OF_LIVE
 	initr_of_live,
 #endif
+    debug_msg,
 #ifdef CONFIG_DM
 	initr_dm,
 #endif
+    debug_msg,
 #if defined(CONFIG_ARM) || defined(CONFIG_NDS32) || defined(CONFIG_RISCV)
 	board_init,	/* Setup chipselects */
 #endif
+    debug_msg,
 	/*
 	 * TODO: printing of the clock inforamtion of the board is now
 	 * implemented as part of bdinfo command. Currently only support for
@@ -701,29 +724,40 @@ static init_fnc_t init_sequence_r[] = {
 #ifdef CONFIG_CLOCKS
 	set_cpu_clk_info, /* Setup clock information */
 #endif
+    debug_msg,
 #ifdef CONFIG_EFI_LOADER
 	efi_memory_init,
 #endif
+    debug_msg,
 	stdio_init_tables,
+    debug_msg,
 	initr_serial,
+    debug_msg,
 	initr_announce,
+    debug_msg,
 	INIT_FUNC_WATCHDOG_RESET
+    debug_msg,
 #ifdef CONFIG_NEEDS_MANUAL_RELOC
 	initr_manual_reloc_cmdtable,
 #endif
+    debug_msg,
 #if defined(CONFIG_PPC) || defined(CONFIG_M68K) || defined(CONFIG_MIPS)
 	initr_trap,
 #endif
+    debug_msg,
 #ifdef CONFIG_ADDR_MAP
 	initr_addr_map,
 #endif
+    debug_msg,
 #if defined(CONFIG_BOARD_EARLY_INIT_R)
 	board_early_init_r,
 #endif
+    debug_msg,
 	INIT_FUNC_WATCHDOG_RESET
 #ifdef CONFIG_POST
 	initr_post_backlog,
 #endif
+    debug_msg,
 	INIT_FUNC_WATCHDOG_RESET
 #if defined(CONFIG_PCI) && defined(CONFIG_SYS_EARLY_PCI_INIT)
 	/*
@@ -732,10 +766,13 @@ static init_fnc_t init_sequence_r[] = {
 	 */
 	initr_pci,
 #endif
+    debug_msg,
 #ifdef CONFIG_ARCH_EARLY_INIT_R
 	arch_early_init_r,
 #endif
+    debug_msg,
 	power_init_board,
+    debug_msg,
 #ifdef CONFIG_MTD_NOR_FLASH
 	initr_flash,
 #endif
@@ -744,27 +781,37 @@ static init_fnc_t init_sequence_r[] = {
 	/* initialize higher level parts of CPU like time base and timers */
 	cpu_init_r,
 #endif
+    debug_msg,
 #ifdef CONFIG_PPC
 	initr_spi,
 #endif
+    debug_msg,
 #ifdef CONFIG_CMD_NAND
 	initr_nand,
 #endif
+    debug_msg,
 #ifdef CONFIG_CMD_ONENAND
 	initr_onenand,
 #endif
+    debug_msg,
 #ifdef CONFIG_MMC
 	initr_mmc,
 #endif
+    debug_msg,
 	initr_env,
+    debug_msg,
 #ifdef CONFIG_SYS_BOOTPARAMS_LEN
 	initr_malloc_bootparams,
 #endif
+    debug_msg,
 	INIT_FUNC_WATCHDOG_RESET
+    debug_msg,
 	initr_secondary_cpu,
+    debug_msg,
 #if defined(CONFIG_ID_EEPROM) || defined(CONFIG_SYS_I2C_MAC_OFFSET)
 	mac_read_from_eeprom,
 #endif
+    debug_msg,
 	INIT_FUNC_WATCHDOG_RESET
 #if defined(CONFIG_PCI) && !defined(CONFIG_SYS_EARLY_PCI_INIT)
 	/*
@@ -772,33 +819,44 @@ static init_fnc_t init_sequence_r[] = {
 	 */
 	initr_pci,
 #endif
+    debug_msg,
 	stdio_add_devices,
+    debug_msg,
 	initr_jumptable,
+    debug_msg,
 #ifdef CONFIG_API
 	initr_api,
 #endif
+    debug_msg,
 	console_init_r,		/* fully init console as a device */
+    debug_msg,
 #ifdef CONFIG_DISPLAY_BOARDINFO_LATE
 	console_announce_r,
 	show_board_info,
 #endif
+    debug_msg,
 #ifdef CONFIG_ARCH_MISC_INIT
 	arch_misc_init,		/* miscellaneous arch-dependent init */
 #endif
+    debug_msg,
 #ifdef CONFIG_MISC_INIT_R
 	misc_init_r,		/* miscellaneous platform-dependent init */
 #endif
+    debug_msg,
 	INIT_FUNC_WATCHDOG_RESET
 #ifdef CONFIG_CMD_KGDB
 	initr_kgdb,
 #endif
+    debug_msg,
 	interrupt_init,
 #ifdef CONFIG_ARM
 	initr_enable_interrupts,
 #endif
+    debug_msg,
 #if defined(CONFIG_MICROBLAZE) || defined(CONFIG_M68K)
 	timer_init,		/* initialize timer */
 #endif
+    debug_msg,
 #if defined(CONFIG_LED_STATUS)
 	initr_status_led,
 #endif
@@ -806,29 +864,37 @@ static init_fnc_t init_sequence_r[] = {
 #ifdef CONFIG_CMD_NET
 	initr_ethaddr,
 #endif
+    debug_msg,
 #ifdef CONFIG_BOARD_LATE_INIT
 	board_late_init,
 #endif
+    debug_msg,
 #if defined(CONFIG_SCSI) && !defined(CONFIG_DM_SCSI)
 	INIT_FUNC_WATCHDOG_RESET
 	initr_scsi,
 #endif
+    debug_msg,
 #ifdef CONFIG_BITBANGMII
 	initr_bbmii,
 #endif
+    debug_msg,
 #ifdef CONFIG_CMD_NET
 	INIT_FUNC_WATCHDOG_RESET
 	initr_net,
 #endif
+    debug_msg,
 #ifdef CONFIG_POST
 	initr_post,
 #endif
+    debug_msg,
 #if defined(CONFIG_CMD_PCMCIA) && !defined(CONFIG_IDE)
 	initr_pcmcia,
 #endif
+    debug_msg,
 #if defined(CONFIG_IDE)
 	initr_ide,
 #endif
+    debug_msg,
 #ifdef CONFIG_LAST_STAGE_INIT
 	INIT_FUNC_WATCHDOG_RESET
 	/*
@@ -838,13 +904,16 @@ static init_fnc_t init_sequence_r[] = {
 	 */
 	last_stage_init,
 #endif
+    debug_msg,
 #ifdef CONFIG_CMD_BEDBUG
 	INIT_FUNC_WATCHDOG_RESET
 	initr_bedbug,
 #endif
+    debug_msg,
 #if defined(CONFIG_PRAM)
 	initr_mem,
 #endif
+    debug_msg,
 	run_main_loop,
 };
 
@@ -856,6 +925,9 @@ void board_init_r(gd_t *new_gd, ulong dest_addr)
 	 * TODO(sjg@chromium.org): Consider doing this for all archs, or
 	 * dropping the new_gd parameter.
 	 */
+    debug_msg_value(0x3100);
+    debug_msg_init();
+    debug_msg();
 #if CONFIG_IS_ENABLED(X86_64)
 	arch_setup_gd(new_gd);
 #endif
