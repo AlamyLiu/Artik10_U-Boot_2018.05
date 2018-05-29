@@ -121,6 +121,7 @@ typedef struct global_data {
 	struct list_head log_head;	/* List of struct log_device */
 	int log_fmt;			/* Mask containing log format info */
 #endif
+	unsigned int debug_counter;	/* debug counter */
 } gd_t;
 #endif
 
