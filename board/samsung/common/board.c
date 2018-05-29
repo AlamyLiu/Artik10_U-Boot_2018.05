@@ -28,6 +28,7 @@
 #include <samsung/misc.h>
 #include <dm/pinctrl.h>
 #include <dm.h>
+#include <mapmem.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -374,4 +375,40 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 	dwc3_uboot_exit(index);
 #endif
 	return 0;
+}
+
+int debug_msg_init(void)
+{
+	gd->debug_counter = 0;
+    return 0;
+}
+int debug_msg(void)
+{
+    printf("debug call %d\n", gd->debug_counter++);
+
+    return 0;
+}
+int debug_msg_value(int v)
+{
+    printf("debug call 0x%x\n", v);
+    return 0;
+}
+#define DISP_LINE_LEN	16
+int debug_dump_mem(ulong addr, ulong bytes)
+{
+	ulong	length;
+    int     size;
+    const void *buf;
+
+    size = 4;
+    length = bytes / size;
+
+	buf = map_sysmem(addr, bytes);
+
+	/* Print the lines. */
+	print_buffer(addr, buf, size, length, DISP_LINE_LEN / size);
+	addr += bytes;
+	unmap_sysmem(buf);
+
+    return 0;
 }
