@@ -9,6 +9,8 @@
  * Marius Groeger <mgroeger@sysgo.de>
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <console.h>
 #include <environment.h>
@@ -38,6 +40,10 @@
 #include <asm/sections.h>
 #include <dm/root.h>
 #include <linux/errno.h>
+
+/*
+#define debug(fmt, ...)  printf(fmt, ##__VA_ARGS__)
+*/
 
 /*
  * Pointer to initial global data area
@@ -285,6 +291,10 @@ static int setup_dest_addr(void)
 #endif
 	gd->ram_top += get_effective_memsize();
 	gd->ram_top = board_get_usable_ram_top(gd->mon_len);
+/* Alamy: hacking
+    gd->ram_top = 0xbea00000;
+*/
+
 	gd->relocaddr = gd->ram_top;
 	debug("Ram top: %08lX\n", (ulong)gd->ram_top);
 #if defined(CONFIG_MP) && (defined(CONFIG_MPC86xx) || defined(CONFIG_E500))
@@ -747,6 +757,9 @@ __weak int arch_cpu_init_dm(void)
 	return 0;
 }
 
+extern int debug_msg_init(void);
+extern int debug_msg(void);
+
 static const init_fnc_t init_sequence_f[] = {
 	setup_mon_len,
 #ifdef CONFIG_OF_CONTROL
@@ -811,6 +824,8 @@ static const init_fnc_t init_sequence_f[] = {
 #if defined(CONFIG_HARD_SPI)
 	init_func_spi,
 #endif
+    debug_msg_init,
+    debug_msg,
 	announce_dram_init,
 	dram_init,		/* configure available RAM banks */
 #ifdef CONFIG_POST
@@ -875,18 +890,22 @@ static const init_fnc_t init_sequence_f[] = {
 	reloc_fdt,
 	reloc_bootstage,
 	setup_reloc,
+    debug_msg,
 #if defined(CONFIG_X86) || defined(CONFIG_ARC)
 	copy_uboot_to_ram,
 	do_elf_reloc_fixups,
 	clear_bss,
 #endif
+    debug_msg,
 #if defined(CONFIG_XTENSA)
 	clear_bss,
 #endif
+    debug_msg,
 #if !defined(CONFIG_ARM) && !defined(CONFIG_SANDBOX) && \
 		!CONFIG_IS_ENABLED(X86_64)
 	jump_to_copy,
 #endif
+    debug_msg,
 	NULL,
 };
 

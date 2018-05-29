@@ -82,8 +82,35 @@ ENTRY(_main)
 	mov	r9, r0
 	bl	board_init_f_init_reserve
 
+    /* Alamy: dump dynamic relocation memory */
+#ifdef _ALAMY_DUMP_DYNAMIC_RELOC
+    mov     r1, #0x20
+	ldr     r0, =__rel_dyn_start
+    bl      debug_dump_mem
+#endif
+
 	mov	r0, #0
 	bl	board_init_f
+
+    /* Alamy: dump dynamic relocation memory */
+#ifdef _ALAMY_DUMP_DYNAMIC_RELOC
+    mov     r1, #0x20
+	ldr     r0, =__rel_dyn_start
+    bl      debug_dump_mem
+#endif
+	bl	debug_msg_init
+	bl	debug_msg
+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_STACK)
+    mov r0, #0x10
+    bl  debug_msg_value
+	ldr	r0, =(CONFIG_SPL_STACK)
+#else
+    mov r0, #0x11
+    bl  debug_msg_value
+	ldr	r0, =(CONFIG_SYS_INIT_SP_ADDR)
+#endif
+    bl  debug_msg_value
+
 
 #if ! defined(CONFIG_SPL_BUILD)
 
@@ -93,11 +120,24 @@ ENTRY(_main)
  * 'here' but relocated.
  */
 
+	mov	r0, #0x1001
+	bl	debug_msg_value
+    mov     r1, #0x20
+	ldr     r0, =__rel_dyn_start
+    bl      debug_dump_mem
+
 	ldr	r0, [r9, #GD_START_ADDR_SP]	/* sp = gd->start_addr_sp */
 	bic	r0, r0, #7	/* 8-byte alignment for ABI compliance */
 	mov	sp, r0
 	ldr	r9, [r9, #GD_BD]		/* r9 = gd->bd */
 	sub	r9, r9, #GD_SIZE		/* new GD is below bd */
+
+	mov	r0, #0x1002
+	bl	debug_msg_value
+    ldr r0, =relocate_code
+    bl  debug_msg_value
+    adr r0, here
+    bl  debug_msg_value
 
 	adr	lr, here
 	ldr	r0, [r9, #GD_RELOC_OFF]		/* r0 = gd->reloc_off */
@@ -105,19 +145,34 @@ ENTRY(_main)
 #if defined(CONFIG_CPU_V7M)
 	orr	lr, #1				/* As required by Thumb-only */
 #endif
+
+    /* Alamy: show gd->reloc_off */
+    mov r4, lr
+    bl  debug_msg_value
+    mov lr, r4
+
 	ldr	r0, [r9, #GD_RELOCADDR]		/* r0 = gd->relocaddr */
 	b	relocate_code
 here:
 /*
  * now relocate vectors
  */
-
+    push {r0, r1, r2, r3}
+	mov	r0, #0x2001
+	bl	debug_msg_value
+    pop {r0, r1, r2, r3}
 	bl	relocate_vectors
 
 /* Set up final (full) environment */
 
+    push {r0, r1, r2, r3}
+	mov	r0, #0x2002
+	bl	debug_msg_value
+	bl	debug_msg_init
+    pop {r0, r1, r2, r3}
 	bl	c_runtime_cpu_setup	/* we still call old routine here */
 #endif
+	bl	debug_msg
 #if !defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_FRAMEWORK)
 # ifdef CONFIG_SPL_BUILD
 	/* Use a DRAM stack for the rest of SPL, if requested */
@@ -126,6 +181,7 @@ here:
 	movne	sp, r0
 	movne	r9, r0
 # endif
+	bl	debug_msg
 	ldr	r0, =__bss_start	/* this is auto-relocated! */
 
 #ifdef CONFIG_USE_ARCH_MEMSET
@@ -146,11 +202,13 @@ clbss_l:cmp	r0, r1			/* while not at end of BSS */
 	addlo	r0, r0, #4		/* move to next */
 	blo	clbss_l
 #endif
+	bl	debug_msg
 
 #if ! defined(CONFIG_SPL_BUILD)
 	bl coloured_LED_init
 	bl red_led_on
 #endif
+	bl	debug_msg
 	/* call board_init_r(gd_t *id, ulong dest_addr) */
 	mov     r0, r9                  /* gd_t */
 	ldr	r1, [r9, #GD_RELOCADDR]	/* dest_addr */
