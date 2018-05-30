@@ -59,11 +59,16 @@ static unsigned int odroid_get_rev(void)
 static int odroid_get_board_type(void)
 {
 	unsigned int adcval;
-	int ret, i;
+#ifdef CONFIG_ADC
+	int ret;
+#endif
+	int i;
 
+#ifdef CONFIG_ADC
 	ret = adc_channel_single_shot("adc", CONFIG_ODROID_REV_AIN, &adcval);
 	if (ret)
 		goto rev_default;
+#endif
 
 	for (i = 0; i < ARRAY_SIZE(odroid_info); i++) {
 		/* ADC tolerance: +1% */
