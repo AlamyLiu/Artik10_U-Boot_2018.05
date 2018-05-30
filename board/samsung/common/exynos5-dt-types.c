@@ -19,6 +19,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static const struct udevice_id board_ids[] = {
 	{ .compatible = "samsung,odroidxu3", .data = EXYNOS5_BOARD_ODROID_XU3 },
+	{ .compatible = "samsung,artik10", .data = EXYNOS5_BOARD_ARTIK10 },
 	{ .compatible = "samsung,exynos5", .data = EXYNOS5_BOARD_GENERIC },
 	{ },
 };
@@ -144,6 +145,14 @@ bool board_is_odroidhc1(void)
 	return false;
 }
 
+bool board_is_artik10(void)
+{
+	if (gd->board_type == EXYNOS5_BOARD_ARTIK10)
+		return true;
+
+	return false;
+}
+
 bool board_is_generic(void)
 {
 	if (gd->board_type == EXYNOS5_BOARD_GENERIC)
@@ -159,7 +168,7 @@ bool board_is_generic(void)
  */
 u32 get_board_rev(void)
 {
-	if (board_is_generic())
+	if (board_is_generic() || board_is_artik10())
 		return 0;
 
 	return odroid_get_rev();
