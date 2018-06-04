@@ -4,6 +4,8 @@
  * Jaehoon Chung <jh80.chung@samsung.com>
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <dwmmc.h>
 #include <fdtdec.h>
@@ -32,7 +34,7 @@ struct exynos_mmc_plat {
 };
 #endif
 
-/* Exynos implmentation specific drver private data */
+/* Exynos implementation specific driver private data */
 struct dwmci_exynos_priv_data {
 #ifdef CONFIG_DM_MMC
 	struct dwmci_host host;
@@ -47,6 +49,12 @@ struct dwmci_exynos_priv_data {
 static void exynos_dwmci_clksel(struct dwmci_host *host)
 {
 	struct dwmci_exynos_priv_data *priv = host->priv;
+
+    debug("%s: %d/%d/%p: CLKSEL=%u (0x%x): host=%p, priv=%p\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        priv->sdr_timing, priv->sdr_timing,
+        host, priv
+    );
 
 	dwmci_writel(host, DWMCI_CLKSEL, priv->sdr_timing);
 }
@@ -66,6 +74,13 @@ unsigned int exynos_dwmci_get_clk(struct dwmci_host *host, uint freq)
 			& DWMCI_DIVRATIO_MASK) + 1;
 	sclk = get_mmc_clk(host->dev_index);
 
+    debug("%s: %d/%d/%p: freq=%d, clk_div=%d, sclk=%lu, host->div=%u, ret=%u (host=%p)\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        freq, clk_div, sclk, host->div,
+        (unsigned int)(sclk/clk_div/(host->div+1)),
+        host
+    );
+
 	/*
 	 * Assume to know divider value.
 	 * When clock unit is broken, need to set "host->div"
@@ -76,6 +91,11 @@ unsigned int exynos_dwmci_get_clk(struct dwmci_host *host, uint freq)
 static void exynos_dwmci_board_init(struct dwmci_host *host)
 {
 	struct dwmci_exynos_priv_data *priv = host->priv;
+
+    debug("%s: %d/%d/%p: host=%p, priv=%p\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        host, priv
+    );
 
 	if (host->quirks & DWMCI_QUIRK_DISABLE_SMU) {
 		dwmci_writel(host, EMMCP_MPSBEGIN0, 0);
@@ -97,6 +117,11 @@ static int exynos_dwmci_core_init(struct dwmci_host *host)
 	unsigned int div;
 	unsigned long freq, sclk;
 
+    debug("%s: %d/%d/%p (host=%p)\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        host
+    );
+
 	if (host->bus_hz)
 		freq = host->bus_hz;
 	else
@@ -107,6 +132,11 @@ static int exynos_dwmci_core_init(struct dwmci_host *host)
 	div = DIV_ROUND_UP(sclk, freq);
 	/* set the clock divisor for mmc */
 	set_mmc_clk(host->dev_index, div);
+
+    debug("%s: %d/%d/%p: freq=%lu, sclk=%lu, div=%d\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        freq, sclk, div
+    );
 
 	host->name = "EXYNOS DWMMC";
 #ifdef CONFIG_EXYNOS5420
@@ -135,6 +165,10 @@ static int do_dwmci_init(struct dwmci_host *host)
 {
 	int flag, err;
 
+    debug("%s: %d/%d/%p\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr
+    );
+
 	flag = host->buswidth == 8 ? PINMUX_FLAG_8BIT_MODE : PINMUX_FLAG_NONE;
 	err = exynos_pinmux_config(host->dev_id, flag);
 	if (err) {
@@ -151,6 +185,8 @@ static int exynos_dwmci_get_config(const void *blob, int node,
 	int err = 0;
 	u32 base, timing[3];
 	struct dwmci_exynos_priv_data *priv;
+
+    debug("%s: host=%p\n", __func__, host);
 
 	priv = malloc(sizeof(struct dwmci_exynos_priv_data));
 	if (!priv) {
@@ -204,6 +240,13 @@ static int exynos_dwmci_get_config(const void *blob, int node,
 			priv->sdr_timing = DWMMC_MMC2_SDR_TIMING_VAL;
 	}
 
+    debug("%s: %d/%d/%p: t0=%u, t1=%u, t2=%u, sdr_timing=%u (0x%x), host=%p, priv=%p\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        timing[0], timing[1], timing[2],
+        priv->sdr_timing, priv->sdr_timing,
+        host, priv
+    );
+
 	host->fifoth_val = fdtdec_get_int(blob, node, "fifoth_val", 0);
 	host->bus_hz = fdtdec_get_int(blob, node, "bus_hz", 0);
 	host->div = fdtdec_get_int(blob, node, "div", 0);
@@ -218,6 +261,8 @@ static int exynos_dwmci_process_node(const void *blob,
 {
 	struct dwmci_host *host;
 	int i, node, err;
+
+    debug("%s\n", __func__);
 
 	for (i = 0; i < count; i++) {
 		node = node_list[i];
@@ -241,6 +286,8 @@ int exynos_dwmmc_init(const void *blob)
 	int boot_dev_node;
 	int err = 0, count;
 
+    debug("%s\n", __func__);
+
 	count = fdtdec_find_aliases_for_id(blob, "mmc",
 			COMPAT_SAMSUNG_EXYNOS_DWMMC, node_list,
 			DWMMC_MAX_CH_NUM);
@@ -262,9 +309,20 @@ static int exynos_dwmmc_probe(struct udevice *dev)
 {
 	struct exynos_mmc_plat *plat = dev_get_platdata(dev);
 	struct mmc_uclass_priv *upriv = dev_get_uclass_priv(dev);
+
 	struct dwmci_exynos_priv_data *priv = dev_get_priv(dev);
+
 	struct dwmci_host *host = &priv->host;
 	int err;
+
+    for (err=0; err < DWMMC_MAX_CH_NUM; err++) {
+        debug("%s: &dwmci_host[%d] = %p\n", __func__,
+        err, (void*)(&(dwmci_host[err])));
+    }
+
+    debug("%s: host=%p, priv=%p, dev=%p\n", __func__,
+        host, priv, dev
+    );
 
 	err = exynos_dwmci_get_config(gd->fdt_blob, dev_of_offset(dev), host);
 	if (err)
@@ -276,18 +334,24 @@ static int exynos_dwmmc_probe(struct udevice *dev)
 	dwmci_setup_cfg(&plat->cfg, host, DWMMC_MAX_FREQ, DWMMC_MIN_FREQ);
 	host->mmc = &plat->mmc;
 	host->mmc->priv = &priv->host;
+/*
 	host->priv = dev;
+*/
 	upriv->mmc = host->mmc;
 
 	return dwmci_probe(dev);
 }
 
+#ifdef CONFIG_BLK
 static int exynos_dwmmc_bind(struct udevice *dev)
 {
 	struct exynos_mmc_plat *plat = dev_get_platdata(dev);
 
+    debug("%s\n", __func__);
+
 	return dwmci_bind(dev, &plat->mmc, &plat->cfg);
 }
+#endif
 
 static const struct udevice_id exynos_dwmmc_ids[] = {
 	{ .compatible = "samsung,exynos4412-dw-mshc" },
@@ -299,7 +363,9 @@ U_BOOT_DRIVER(exynos_dwmmc_drv) = {
 	.name		= "exynos_dwmmc",
 	.id		= UCLASS_MMC,
 	.of_match	= exynos_dwmmc_ids,
+#ifdef CONFIG_BLK
 	.bind		= exynos_dwmmc_bind,
+#endif
 	.ops		= &dm_dwmci_ops,
 	.probe		= exynos_dwmmc_probe,
 	.priv_auto_alloc_size	= sizeof(struct dwmci_exynos_priv_data),

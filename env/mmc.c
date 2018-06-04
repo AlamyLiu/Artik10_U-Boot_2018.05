@@ -3,7 +3,7 @@
  * (C) Copyright 2008-2011 Freescale Semiconductor, Inc.
  */
 
-/* #define DEBUG */
+#define DEBUG
 
 #include <common.h>
 
@@ -157,15 +157,18 @@ static const char *init_mmc_for_env(struct mmc *mmc)
 	if (!mmc)
 		return "!No MMC card found";
 
-#if CONFIG_IS_ENABLED(BLK)
+#if (CONFIG_IS_ENABLED(DM_MMC) && CONFIG_IS_ENABLED(BLK))
 	struct udevice *dev;
 
+    debug("%s - %d\n", __func__, __LINE__);
 	if (blk_get_from_parent(mmc->dev, &dev))
 		return "!No block device";
 #else
+    debug("%s - %d\n", __func__, __LINE__);
 	if (mmc_init(mmc))
 		return "!MMC init failed";
 #endif
+    debug("%s - %d\n", __func__, __LINE__);
 	if (mmc_set_env_part(mmc))
 		return "!MMC partition switch failed";
 
@@ -316,23 +319,27 @@ static int env_mmc_load(void)
 
 	mmc = find_mmc_device(dev);
 
+    debug("%s - %d\n", __func__, __LINE__);
 	errmsg = init_mmc_for_env(mmc);
 	if (errmsg) {
 		ret = -EIO;
 		goto err;
 	}
 
+    debug("%s - %d\n", __func__, __LINE__);
 	if (mmc_get_env_addr(mmc, 0, &offset)) {
 		ret = -EIO;
 		goto fini;
 	}
 
+    debug("%s - %d\n", __func__, __LINE__);
 	if (read_env(mmc, CONFIG_ENV_SIZE, offset, buf)) {
 		errmsg = "!read failed";
 		ret = -EIO;
 		goto fini;
 	}
 
+    debug("%s - %d\n", __func__, __LINE__);
 	ret = env_import(buf, 1);
 
 fini:

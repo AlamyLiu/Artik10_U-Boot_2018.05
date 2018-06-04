@@ -4,6 +4,8 @@
  * Written by Simon Glass <sjg@chromium.org>
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <mmc.h>
 #include <dm.h>

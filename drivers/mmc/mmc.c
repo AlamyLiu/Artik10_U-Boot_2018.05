@@ -6,6 +6,8 @@
  * Based vaguely on the Linux code
  */
 
+#define DEBUG
+
 #include <config.h>
 #include <common.h>
 #include <command.h>
@@ -1503,6 +1505,12 @@ int mmc_set_clock(struct mmc *mmc, uint clock, bool disable)
 			clock = mmc->cfg->f_min;
 	}
 
+    debug("%s: %s, clock=%d, disable=%d\n", __func__,
+        mmc->cfg->name,
+        clock,
+        (disable ? 1 : 0)
+    );
+
 	mmc->clock = clock;
 	mmc->clk_disable = disable;
 
@@ -2658,6 +2666,8 @@ static int mmc_probe(bd_t *bis)
 	int ret, i;
 	struct uclass *uc;
 	struct udevice *dev;
+
+    debug("%s\n", __func__);
 
 	ret = uclass_get(UCLASS_MMC, &uc);
 	if (ret)

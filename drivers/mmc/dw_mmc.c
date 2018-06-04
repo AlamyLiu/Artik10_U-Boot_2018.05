@@ -5,6 +5,8 @@
  * Rajeshawari Shinde <rajeshwari.s@samsung.com>
  */
 
+#define DEBUG
+
 #include <bouncebuf.h>
 #include <common.h>
 #include <errno.h>
@@ -34,6 +36,8 @@ static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
 		u32 desc0, u32 desc1, u32 desc2)
 {
 	struct dwmci_idmac *desc = idmac;
+
+	debug("%s\n", __func__);
 
 	desc->flags = desc0;
 	desc->cnt = desc1;
@@ -183,6 +187,7 @@ static int dwmci_set_transfer_mode(struct dwmci_host *host,
 	return mode;
 }
 
+extern int debug_dump_mem(ulong addr, ulong bytes);
 #ifdef CONFIG_DM_MMC
 static int dwmci_send_cmd(struct udevice *dev, struct mmc_cmd *cmd,
 		   struct mmc_data *data)
@@ -258,6 +263,13 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	flags |= (cmd->cmdidx | DWMCI_CMD_START | DWMCI_CMD_USE_HOLD_REG);
 
 	debug("Sending CMD%d\n",cmd->cmdidx);
+    if (
+        (cmd->cmdidx == 1) && (host->dev_index == 0)
+        && (host->debug_dump == 0)
+    ) {
+        debug_dump_mem((ulong)(host->ioaddr), 0x400);
+        host->debug_dump = 1;
+    }
 
 	dwmci_writel(host, DWMCI_CMD, flags);
 
@@ -326,6 +338,11 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 	int timeout = 10000;
 	unsigned long sclk;
 
+	debug("%s: %d/%d/%p: freq: %d\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        freq
+    );
+
 	if ((freq == host->clock) || (freq == 0))
 		return 0;
 	/*
@@ -346,6 +363,15 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 		div = 0;	/* bypass mode */
 	else
 		div = DIV_ROUND_UP(sclk, 2 * freq);
+
+    debug("%s: sclk from %s\n", __func__,
+        (host->get_mmc_clk) ? "get_mmc_clk" :
+        ((host->bus_hz) ? "bus_hz" : "Null")
+    );
+	debug("%s: %d/%d/%p: freq=%d, sclk=%lu, div=%d\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        freq, sclk, div
+    );
 
 	dwmci_writel(host, DWMCI_CLKENA, 0);
 	dwmci_writel(host, DWMCI_CLKSRC, 0);
@@ -393,7 +419,9 @@ static int dwmci_set_ios(struct mmc *mmc)
 	struct dwmci_host *host = (struct dwmci_host *)mmc->priv;
 	u32 ctype, regs;
 
-	debug("Buswidth = %d, clock: %d\n", mmc->bus_width, mmc->clock);
+	debug("%s: %d/%d/%p: Buswidth = %d, clock: %d\n", __func__,
+        host->dev_index, host->dev_id, host->ioaddr,
+        mmc->bus_width, mmc->clock);
 
 	dwmci_setup_bus(host, mmc->clock);
 	switch (mmc->bus_width) {
@@ -427,6 +455,10 @@ static int dwmci_set_ios(struct mmc *mmc)
 static int dwmci_init(struct mmc *mmc)
 {
 	struct dwmci_host *host = mmc->priv;
+
+    debug("%s: %s - %d/%d/%p\n", __func__,
+        mmc->cfg->name, host->dev_index, host->dev_id, host->ioaddr
+    );
 
 	if (host->board_init)
 		host->board_init(host);
@@ -515,11 +547,15 @@ void dwmci_setup_cfg(struct mmc_config *cfg, struct dwmci_host *host,
 #ifdef CONFIG_BLK
 int dwmci_bind(struct udevice *dev, struct mmc *mmc, struct mmc_config *cfg)
 {
+    debug("%s\n", __func__);
+
 	return mmc_bind(dev, mmc, cfg);
 }
 #else
 int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk)
 {
+    debug("%s\n", __func__);
+
 	dwmci_setup_cfg(&host->cfg, host, max_clk, min_clk);
 
 	host->mmc = mmc_create(&host->cfg, host);

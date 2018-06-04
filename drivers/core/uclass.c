@@ -6,6 +6,8 @@
  * Pavel Herrmann <morpheus.ibis@gmail.com>
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <dm.h>
 #include <errno.h>
@@ -52,6 +54,8 @@ static int uclass_add(enum uclass_id id, struct uclass **ucp)
 	struct uclass_driver *uc_drv;
 	struct uclass *uc;
 	int ret;
+
+    debug("%s: id=%d\n", id);
 
 	*ucp = NULL;
 	uc_drv = lists_uclass_lookup(id);

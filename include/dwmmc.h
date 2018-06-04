@@ -185,6 +185,7 @@ struct dwmci_host {
 
 	/* use fifo mode to read and write data */
 	bool fifo_mode;
+    bool debug_dump;
 };
 
 struct dwmci_idmac {

@@ -4,6 +4,8 @@
  * Minkyu Kang <mk7.kang@samsung.com>
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <asm/io.h>
 #include <asm/arch/clock.h>
@@ -871,6 +873,8 @@ static void exynos5_set_mmc_clk(int dev_index, unsigned int div)
 		(struct exynos5_clock *)samsung_get_base_clock();
 	unsigned int addr;
 
+    debug("%s: %d, div=%d\n", __func__, dev_index, div);
+
 	/*
 	 * CLK_DIV_FSYS1
 	 * MMC0_PRE_RATIO [15:8], MMC1_PRE_RATIO [31:24]
@@ -895,6 +899,8 @@ static void exynos5420_set_mmc_clk(int dev_index, unsigned int div)
 		(struct exynos5420_clock *)samsung_get_base_clock();
 	unsigned int addr;
 	unsigned int shift;
+
+    debug("%s: %d, div=%d\n", __func__, dev_index, div);
 
 	/*
 	 * CLK_DIV_FSYS1

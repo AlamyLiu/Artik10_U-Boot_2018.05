@@ -6,6 +6,8 @@
  * Pavel Herrmann <morpheus.ibis@gmail.com>
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <dm.h>
 #include <dm-demo.h>

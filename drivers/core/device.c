@@ -8,6 +8,8 @@
  * Pavel Herrmann <morpheus.ibis@gmail.com>
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <asm/io.h>
 #include <clk.h>
